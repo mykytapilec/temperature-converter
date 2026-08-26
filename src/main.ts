@@ -1,4 +1,8 @@
 import './style.css';
+import {
+  convertTemperature,
+  type TemperatureUnit,
+} from './converter';
 
 const app = document.querySelector<HTMLDivElement>('#app');
 
@@ -53,13 +57,15 @@ const toUnitSelect = document.querySelector<HTMLSelectElement>('#to-unit');
 const convertButton = document.querySelector<HTMLButtonElement>(
   'button[type="submit"]',
 );
+const result = document.querySelector<HTMLOutputElement>('.result');
 
 if (
   !form ||
   !temperatureInput ||
   !fromUnitSelect ||
   !toUnitSelect ||
-  !convertButton
+  !convertButton ||
+  !result
 ) {
   throw new Error('Required form elements were not found.');
 }
@@ -71,10 +77,32 @@ const updateButtonState = (): void => {
     toUnitSelect.value === '';
 };
 
+const formatNumber = (value: number): string => {
+  return Number.isInteger(value) ? value.toString() : value.toFixed(2);
+};
+
 temperatureInput.addEventListener('input', updateButtonState);
 fromUnitSelect.addEventListener('change', updateButtonState);
 toUnitSelect.addEventListener('change', updateButtonState);
 
 form.addEventListener('submit', (event) => {
   event.preventDefault();
+
+  const temperature = Number(temperatureInput.value);
+  const fromUnit = fromUnitSelect.value as TemperatureUnit;
+  const toUnit = toUnitSelect.value as TemperatureUnit;
+
+  const convertedTemperature = convertTemperature(
+    temperature,
+    fromUnit,
+    toUnit,
+  );
+
+  const formattedTemperature = formatNumber(convertedTemperature);
+
+  const fromUnitName =
+    fromUnit.charAt(0).toUpperCase() + fromUnit.slice(1);
+  const toUnitName = toUnit.charAt(0).toUpperCase() + toUnit.slice(1);
+
+  result.textContent = `${temperature} ${fromUnitName} is ${formattedTemperature} ${toUnitName}`;
 });
